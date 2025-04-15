@@ -2,15 +2,16 @@ package com.example.campus.study;
 
 import android.app.TimePickerDialog;
 import android.os.Bundle;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.SeekBar;
-import android.widget.TimePicker;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.campus.R;
 import com.example.campus.databinding.ActivityStudyPlanAddBinding;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
@@ -62,42 +63,59 @@ public class StudyPlanEditActivity extends AppCompatActivity {
         setupDurationSeekBar();
 
         // 저장 버튼 리스너 - 텍스트 변경
-        binding.btnSave.setText("수정하기");
-        binding.btnSave.setOnClickListener(v -> updatePlan());
+        if (binding.btnSave != null) {
+            binding.btnSave.setText("수정하기");
+            binding.btnSave.setOnClickListener(v -> updatePlan());
+        }
 
         // 계획 정보 로드
         loadPlanData();
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_edit_plan, menu);
+        return true;
+    }
+
     private void loadPlanData() {
         // 로딩 표시
-        binding.progressBar.setVisibility(View.VISIBLE);
+        if (binding.progressBar != null) {
+            binding.progressBar.setVisibility(View.VISIBLE);
+        }
 
         // Firestore에서 계획 정보 가져오기
-        db.collection("studyPlans")
-                .document(planId)
-                .get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    // 로딩 숨김
-                    binding.progressBar.setVisibility(View.GONE);
+        if (planId != null) {
+            db.collection("studyPlans")
+                    .document(planId)
+                    .get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        // 로딩 숨김
+                        if (binding.progressBar != null) {
+                            binding.progressBar.setVisibility(View.GONE);
+                        }
 
-                    if (documentSnapshot.exists()) {
-                        currentPlan = documentSnapshot.toObject(StudyPlan.class);
-                        currentPlan.setId(planId);
-
-                        // UI 업데이트
-                        updateUI(currentPlan);
-                    } else {
-                        Toast.makeText(this, "계획 정보를 가져올 수 없습니다", Toast.LENGTH_SHORT).show();
+                        if (documentSnapshot.exists()) {
+                            currentPlan = documentSnapshot.toObject(StudyPlan.class);
+                            if (currentPlan != null) {
+                                currentPlan.setId(planId);
+                                // UI 업데이트
+                                updateUI(currentPlan);
+                            }
+                        } else {
+                            Toast.makeText(this, "계획 정보를 가져올 수 없습니다", Toast.LENGTH_SHORT).show();
+                            finish();
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        // 로딩 숨김
+                        if (binding.progressBar != null) {
+                            binding.progressBar.setVisibility(View.GONE);
+                        }
+                        Toast.makeText(this, "데이터 로드 실패: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                         finish();
-                    }
-                })
-                .addOnFailureListener(e -> {
-                    // 로딩 숨김
-                    binding.progressBar.setVisibility(View.GONE);
-                    Toast.makeText(this, "데이터 로드 실패: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    finish();
-                });
+                    });
+        }
     }
 
     private void updateUI(StudyPlan plan) {
@@ -107,85 +125,84 @@ public class StudyPlanEditActivity extends AppCompatActivity {
         updateDateTimeText();
 
         // 과목 및 설명 설정
-        binding.etSubject.setText(plan.getSubject());
-        binding.etDescription.setText(plan.getDescription());
+        if (binding.etSubject != null && binding.etDescription != null) {
+            binding.etSubject.setText(plan.getSubject());
+            binding.etDescription.setText(plan.getDescription());
+        }
 
         // 학습 시간 설정
         durationMinutes = plan.getDurationMinutes();
-        binding.seekBarDuration.setProgress(durationMinutes);
+        if (binding.seekBarDuration != null) {
+            binding.seekBarDuration.setProgress(durationMinutes);
+        }
         updateDurationText(durationMinutes);
-
-        // 삭제 버튼 추가
-        binding.toolbar.inflateMenu(android.R.menu.delete);
-        binding.toolbar.setOnMenuItemClickListener(item -> {
-            if (item.getItemId() == android.R.id.delete) {
-                showDeleteConfirmationDialog();
-                return true;
-            }
-            return false;
-        });
     }
 
     private void showTimePicker() {
-        TimePickerDialog timePickerDialog = new TimePickerDialog(
-                this,
-                new TimePickerDialog.OnTimeSetListener() {
-                    @Override
-                    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+        if (selectedDateTime != null) {
+            TimePickerDialog timePickerDialog = new TimePickerDialog(
+                    this,
+                    (view, hourOfDay, minute) -> {
                         selectedDateTime.set(Calendar.HOUR_OF_DAY, hourOfDay);
                         selectedDateTime.set(Calendar.MINUTE, minute);
                         updateDateTimeText();
-                    }
-                },
-                selectedDateTime.get(Calendar.HOUR_OF_DAY),
-                selectedDateTime.get(Calendar.MINUTE),
-                false
-        );
-        timePickerDialog.show();
+                    },
+                    selectedDateTime.get(Calendar.HOUR_OF_DAY),
+                    selectedDateTime.get(Calendar.MINUTE),
+                    false
+            );
+            timePickerDialog.show();
+        }
     }
 
     private void updateDateTimeText() {
-        SimpleDateFormat dateSdf = new SimpleDateFormat("yyyy년 MM월 dd일 (E)", Locale.getDefault());
-        SimpleDateFormat timeSdf = new SimpleDateFormat("a h:mm", Locale.getDefault());
+        if (binding.tvDate != null && binding.tvTime != null && selectedDateTime != null) {
+            SimpleDateFormat dateSdf = new SimpleDateFormat("yyyy년 MM월 dd일 (E)", Locale.getDefault());
+            SimpleDateFormat timeSdf = new SimpleDateFormat("a h:mm", Locale.getDefault());
 
-        binding.tvDate.setText(dateSdf.format(selectedDateTime.getTime()));
-        binding.tvTime.setText(timeSdf.format(selectedDateTime.getTime()));
+            binding.tvDate.setText(dateSdf.format(selectedDateTime.getTime()));
+            binding.tvTime.setText(timeSdf.format(selectedDateTime.getTime()));
+        }
     }
 
     private void setupDurationSeekBar() {
-        binding.seekBarDuration.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                // 최소값 15분으로 설정
-                int duration = Math.max(15, progress);
-                durationMinutes = duration;
-                updateDurationText(duration);
-            }
+        if (binding.seekBarDuration != null) {
+            binding.seekBarDuration.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                @Override
+                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                    // 최소값 15분으로 설정
+                    int duration = Math.max(15, progress);
+                    durationMinutes = duration;
+                    updateDurationText(duration);
+                }
 
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-                // 필요 없음
-            }
+                @Override
+                public void onStartTrackingTouch(SeekBar seekBar) {
+                    // 필요 없음
+                }
 
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                // 필요 없음
-            }
-        });
+                @Override
+                public void onStopTrackingTouch(SeekBar seekBar) {
+                    // 필요 없음
+                }
+            });
+        }
     }
 
     private void updateDurationText(int minutes) {
-        int hours = minutes / 60;
-        int mins = minutes % 60;
+        if (binding.tvDuration != null) {
+            int hours = minutes / 60;
+            int mins = minutes % 60;
 
-        String durationText;
-        if (hours > 0) {
-            durationText = hours + "시간 " + (mins > 0 ? mins + "분" : "");
-        } else {
-            durationText = mins + "분";
+            String durationText;
+            if (hours > 0) {
+                durationText = hours + "시간 " + (mins > 0 ? mins + "분" : "");
+            } else {
+                durationText = mins + "분";
+            }
+
+            binding.tvDuration.setText(durationText);
         }
-
-        binding.tvDuration.setText(durationText);
     }
 
     private void updatePlan() {
@@ -195,16 +212,26 @@ public class StudyPlanEditActivity extends AppCompatActivity {
             return;
         }
 
-        String subject = binding.etSubject.getText().toString().trim();
-        String description = binding.etDescription.getText().toString().trim();
+        String subject = "";
+        String description = "";
 
-        if (subject.isEmpty()) {
-            binding.etSubject.setError("과목명을 입력해주세요");
+        if (binding.etSubject != null && binding.etDescription != null) {
+            subject = binding.etSubject.getText().toString().trim();
+            description = binding.etDescription.getText().toString().trim();
+
+            if (subject.isEmpty()) {
+                binding.etSubject.setError("과목명을 입력해주세요");
+                return;
+            }
+        } else {
+            Toast.makeText(this, "UI 요소를 찾을 수 없습니다", Toast.LENGTH_SHORT).show();
             return;
         }
 
         // 로딩 표시
-        binding.progressBar.setVisibility(View.VISIBLE);
+        if (binding.progressBar != null) {
+            binding.progressBar.setVisibility(View.VISIBLE);
+        }
 
         // 업데이트할 데이터
         DocumentReference docRef = db.collection("studyPlans").document(planId);
@@ -218,7 +245,7 @@ public class StudyPlanEditActivity extends AppCompatActivity {
                 subject,
                 description,
                 durationMinutes,
-                currentPlan.isCompleted(),
+                currentPlan != null && currentPlan.isCompleted(),
                 userId,
                 planId
         );
@@ -226,7 +253,9 @@ public class StudyPlanEditActivity extends AppCompatActivity {
         // Firestore 업데이트
         docRef.set(updatedPlan)
                 .addOnSuccessListener(aVoid -> {
-                    binding.progressBar.setVisibility(View.GONE);
+                    if (binding.progressBar != null) {
+                        binding.progressBar.setVisibility(View.GONE);
+                    }
 
                     // 알림 업데이트
                     updateReminder(updatedPlan);
@@ -235,32 +264,36 @@ public class StudyPlanEditActivity extends AppCompatActivity {
                     finish(); // 액티비티 종료
                 })
                 .addOnFailureListener(e -> {
-                    binding.progressBar.setVisibility(View.GONE);
+                    if (binding.progressBar != null) {
+                        binding.progressBar.setVisibility(View.GONE);
+                    }
                     Toast.makeText(StudyPlanEditActivity.this, "수정 실패: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
 
     private void updateReminder(StudyPlan plan) {
         // 기존 알림 취소
-        StudyReminderManager.cancelReminder(this, plan.getId().hashCode());
+        if (plan != null && plan.getId() != null) {
+            StudyReminderManager.cancelReminder(this, plan.getId().hashCode());
 
-        // 계획이 완료되지 않은 경우, 미래 시간이면 알림 예약
-        if (!plan.isCompleted()) {
-            long now = System.currentTimeMillis();
-            long planTime = plan.getTimestamp();
+            // 계획이 완료되지 않은 경우, 미래 시간이면 알림 예약
+            if (!plan.isCompleted()) {
+                long now = System.currentTimeMillis();
+                long planTime = plan.getTimestamp();
 
-            if (planTime > now) {
-                String title = plan.getSubject();
-                String message = "학습 계획: " + plan.getDescription();
-                int notificationId = plan.getId().hashCode();
+                if (planTime > now) {
+                    String title = plan.getSubject();
+                    String message = "학습 계획: " + plan.getDescription();
+                    int notificationId = plan.getId().hashCode();
 
-                StudyReminderManager.scheduleReminder(
-                        this,
-                        notificationId,
-                        title,
-                        message,
-                        planTime
-                );
+                    StudyReminderManager.scheduleReminder(
+                            this,
+                            notificationId,
+                            title,
+                            message,
+                            planTime
+                    );
+                }
             }
         }
     }
@@ -276,30 +309,42 @@ public class StudyPlanEditActivity extends AppCompatActivity {
 
     private void deletePlan() {
         // 로딩 표시
-        binding.progressBar.setVisibility(View.VISIBLE);
+        if (binding.progressBar != null) {
+            binding.progressBar.setVisibility(View.VISIBLE);
+        }
 
-        db.collection("studyPlans")
-                .document(planId)
-                .delete()
-                .addOnSuccessListener(aVoid -> {
-                    binding.progressBar.setVisibility(View.GONE);
+        if (planId != null) {
+            db.collection("studyPlans")
+                    .document(planId)
+                    .delete()
+                    .addOnSuccessListener(aVoid -> {
+                        if (binding.progressBar != null) {
+                            binding.progressBar.setVisibility(View.GONE);
+                        }
 
-                    // 알림 취소
-                    StudyReminderManager.cancelReminder(this, planId.hashCode());
+                        // 알림 취소
+                        StudyReminderManager.cancelReminder(this, planId.hashCode());
 
-                    Toast.makeText(this, "학습 계획이 삭제되었습니다", Toast.LENGTH_SHORT).show();
-                    finish();
-                })
-                .addOnFailureListener(e -> {
-                    binding.progressBar.setVisibility(View.GONE);
-                    Toast.makeText(this, "삭제 실패: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                });
+                        Toast.makeText(this, "학습 계획이 삭제되었습니다", Toast.LENGTH_SHORT).show();
+                        finish();
+                    })
+                    .addOnFailureListener(e -> {
+                        if (binding.progressBar != null) {
+                            binding.progressBar.setVisibility(View.GONE);
+                        }
+                        Toast.makeText(this, "삭제 실패: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    });
+        }
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
+        int id = item.getItemId();
+        if (id == android.R.id.home) {
             finish(); // 뒤로가기
+            return true;
+        } else if (id == R.id.action_delete) {
+            showDeleteConfirmationDialog();
             return true;
         }
         return super.onOptionsItemSelected(item);

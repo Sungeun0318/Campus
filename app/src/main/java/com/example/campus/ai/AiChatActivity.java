@@ -92,14 +92,11 @@ public class AiChatActivity extends AppCompatActivity {
     }
 
     private void setupSendButton() {
-        binding.btnSend.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String message = binding.etMessage.getText().toString().trim();
-                if (!message.isEmpty()) {
-                    sendMessage(message);
-                    binding.etMessage.setText("");
-                }
+        binding.btnSend.setOnClickListener(v -> {
+            String message = binding.etMessage.getText().toString().trim();
+            if (!message.isEmpty()) {
+                sendMessage(message);
+                binding.etMessage.setText("");
             }
         });
     }
@@ -177,9 +174,7 @@ public class AiChatActivity extends AppCompatActivity {
                 .document(chatId)
                 .collection("messages")
                 .add(messageData)
-                .addOnFailureListener(e -> {
-                    Log.e("AiChatActivity", "메시지 저장 실패", e);
-                });
+                .addOnFailureListener(e -> Log.e("AiChatActivity", "메시지 저장 실패", e));
     }
 
     @Override

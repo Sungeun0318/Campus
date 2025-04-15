@@ -20,9 +20,9 @@ import java.util.Locale;
 
 public class StudyPlanAdapter extends RecyclerView.Adapter<StudyPlanAdapter.StudyPlanViewHolder> {
 
-    private Context context;
+    private final Context context;
     private List<StudyPlan> studyPlans;
-    private StudyPlanClickListener listener;
+    private final StudyPlanClickListener listener;
 
     public interface StudyPlanClickListener {
         void onPlanCheckedChanged(StudyPlan plan, boolean isChecked);

@@ -2,19 +2,11 @@ package com.example.campus.ai;
 
 import android.util.Log;
 
-import androidx.annotation.NonNull;
-
-import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
-import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.functions.FirebaseFunctions;
-import com.google.firebase.functions.HttpsCallableResult;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -26,7 +18,7 @@ import java.util.Map;
 public class AiService {
     private static final String TAG = "AiService";
     private static volatile AiService INSTANCE;
-    private FirebaseFunctions functions;
+    private final FirebaseFunctions functions;
     private String geminiApiKey;
 
     private AiService() {
@@ -63,17 +55,20 @@ public class AiService {
 
         functions.getHttpsCallable("generateAIResponse")
                 .call(data)
-                .addOnCompleteListener(new OnCompleteListener<HttpsCallableResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<HttpsCallableResult> task) {
-                        if (task.isSuccessful()) {
-                            Map<String, Object> result = (Map<String, Object>) task.getResult().getData();
-                            String responseText = (String) result.get("text");
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful() && task.getResult() != null) {
+                        Object result = task.getResult().getData();
+                        if (result instanceof Map) {
+                            @SuppressWarnings("unchecked")
+                            Map<String, Object> resultMap = (Map<String, Object>) result;
+                            String responseText = (String) resultMap.get("text");
                             callback.onSuccess(responseText);
                         } else {
-                            Log.e(TAG, "Error generating AI response", task.getException());
-                            callback.onFailure(task.getException());
+                            callback.onFailure(new Exception("Invalid response format"));
                         }
+                    } else {
+                        Log.e(TAG, "Error generating AI response", task.getException());
+                        callback.onFailure(task.getException());
                     }
                 });
     }
@@ -112,26 +107,23 @@ public class AiService {
                     .put("temperature", 0.7)
                     .put("maxOutputTokens", 1000));
 
-            JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, url, jsonBody,
-                    new Response.Listener<JSONObject>() {
-                        @Override
-                        public void onResponse(JSONObject response) {
-                            try {
-                                Log.d(TAG, "Gemini API response: " + response.toString());
-                                String aiResponse = extractTextFromGeminiResponse(response);
-                                callback.onSuccess(aiResponse);
-                            } catch (JSONException e) {
-                                Log.e(TAG, "Error parsing Gemini response", e);
-                                callback.onFailure(e);
-                            }
+            JsonObjectRequest request = new JsonObjectRequest(
+                    Request.Method.POST,
+                    url,
+                    jsonBody,
+                    response -> {
+                        try {
+                            Log.d(TAG, "Gemini API response: " + response);
+                            String aiResponse = extractTextFromGeminiResponse(response);
+                            callback.onSuccess(aiResponse);
+                        } catch (JSONException e) {
+                            Log.e(TAG, "Error parsing Gemini response", e);
+                            callback.onFailure(e);
                         }
                     },
-                    new Response.ErrorListener() {
-                        @Override
-                        public void onErrorResponse(VolleyError error) {
-                            Log.e(TAG, "Error calling Gemini API", error);
-                            callback.onFailure(error);
-                        }
+                    error -> {
+                        Log.e(TAG, "Error calling Gemini API", error);
+                        callback.onFailure(error);
                     });
 
             requestQueue.add(request);
@@ -144,16 +136,18 @@ public class AiService {
     private String extractTextFromGeminiResponse(JSONObject response) throws JSONException {
         StringBuilder result = new StringBuilder();
 
-        JSONArray candidates = response.getJSONArray("candidates");
-        if (candidates.length() > 0) {
-            JSONObject candidate = candidates.getJSONObject(0);
-            JSONObject content = candidate.getJSONObject("content");
-            JSONArray parts = content.getJSONArray("parts");
+        if (response != null) {
+            JSONArray candidates = response.getJSONArray("candidates");
+            if (candidates.length() > 0) {
+                JSONObject candidate = candidates.getJSONObject(0);
+                JSONObject content = candidate.getJSONObject("content");
+                JSONArray parts = content.getJSONArray("parts");
 
-            for (int i = 0; i < parts.length(); i++) {
-                JSONObject part = parts.getJSONObject(i);
-                if (part.has("text")) {
-                    result.append(part.getString("text"));
+                for (int i = 0; i < parts.length(); i++) {
+                    JSONObject part = parts.getJSONObject(i);
+                    if (part.has("text")) {
+                        result.append(part.getString("text"));
+                    }
                 }
             }
         }

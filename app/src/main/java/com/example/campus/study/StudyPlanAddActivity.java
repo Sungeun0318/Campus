@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.SeekBar;
-import android.widget.TimePicker;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -17,6 +16,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
+import java.util.Objects;
 
 public class StudyPlanAddActivity extends AppCompatActivity {
 
@@ -77,13 +77,10 @@ public class StudyPlanAddActivity extends AppCompatActivity {
     private void showTimePicker() {
         TimePickerDialog timePickerDialog = new TimePickerDialog(
                 this,
-                new TimePickerDialog.OnTimeSetListener() {
-                    @Override
-                    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                        selectedDateTime.set(Calendar.HOUR_OF_DAY, hourOfDay);
-                        selectedDateTime.set(Calendar.MINUTE, minute);
-                        updateDateTimeText();
-                    }
+                (view, hourOfDay, minute) -> {
+                    selectedDateTime.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                    selectedDateTime.set(Calendar.MINUTE, minute);
+                    updateDateTimeText();
                 },
                 selectedDateTime.get(Calendar.HOUR_OF_DAY),
                 selectedDateTime.get(Calendar.MINUTE),
@@ -139,8 +136,8 @@ public class StudyPlanAddActivity extends AppCompatActivity {
             return;
         }
 
-        String subject = binding.etSubject.getText().toString().trim();
-        String description = binding.etDescription.getText().toString().trim();
+        String subject = Objects.requireNonNull(binding.etSubject.getText()).toString().trim();
+        String description = Objects.requireNonNull(binding.etDescription.getText()).toString().trim();
 
         if (subject.isEmpty()) {
             binding.etSubject.setError("과목명을 입력해주세요");

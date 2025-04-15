@@ -11,6 +11,8 @@ import com.example.campus.databinding.ActivityEmotionRecordBinding;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.Objects;
+
 public class EmotionRecordActivity extends AppCompatActivity {
 
     private ActivityEmotionRecordBinding binding;
@@ -43,12 +45,7 @@ public class EmotionRecordActivity extends AppCompatActivity {
         setupEmotionTypeListeners();
 
         // 저장 버튼 클릭 리스너
-        binding.btnSave.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                saveEmotionRecord();
-            }
-        });
+        binding.btnSave.setOnClickListener(v -> saveEmotionRecord());
     }
 
     private void setupEmotionLevelListeners() {
@@ -149,7 +146,7 @@ public class EmotionRecordActivity extends AppCompatActivity {
         binding.progressBar.setVisibility(View.VISIBLE);
 
         String userId = auth.getCurrentUser().getUid();
-        String note = binding.etNote.getText().toString().trim();
+        String note = Objects.requireNonNull(binding.etNote.getText()).toString().trim();
 
         // 감정 기록 객체 생성
         EmotionRecord record = new EmotionRecord(selectedEmotionLevel, selectedEmotionType, note, userId);

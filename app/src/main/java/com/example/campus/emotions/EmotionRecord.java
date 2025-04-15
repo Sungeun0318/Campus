@@ -3,6 +3,7 @@ package com.example.campus.emotions;
 /**
  * 감정 기록 데이터 클래스
  */
+@SuppressWarnings("unused") // Firestore에서 리플렉션으로 사용되므로 경고 억제
 public class EmotionRecord {
     private long timestamp;
     private int emotionLevel; // 1-5 등급 (1: 매우 나쁨, 5: 매우 좋음)
