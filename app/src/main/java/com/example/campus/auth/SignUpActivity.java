@@ -2,6 +2,7 @@ package com.example.campus.auth;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
@@ -34,10 +35,13 @@ public class SignUpActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         // Toolbar 설정
-        setSupportActionBar(binding.toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setHomeAsUpIndicator(android.R.drawable.ic_menu_close_clear_cancel);
-
+        if (binding.toolbar != null) {
+            setSupportActionBar(binding.toolbar);
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+                getSupportActionBar().setHomeAsUpIndicator(android.R.drawable.ic_menu_close_clear_cancel);
+            }
+        }
         // Firebase 초기화
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
@@ -104,6 +108,7 @@ public class SignUpActivity extends AppCompatActivity {
         // 로딩 표시
         binding.progressBar.setVisibility(View.VISIBLE);
 
+        // reCAPTCHA 관련 코드 주석 처리하고 바로 회원가입 진행
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
@@ -115,7 +120,7 @@ public class SignUpActivity extends AppCompatActivity {
                             // Firestore에 사용자 정보 저장
                             saveUserToFirestore(user.getUid(), name, email);
                         } else {
-                            // 회원가입 실패
+                            // 로딩 숨김
                             binding.progressBar.setVisibility(View.GONE);
                             Toast.makeText(SignUpActivity.this, "회원가입 실패: " +
                                     task.getException().getMessage(), Toast.LENGTH_SHORT).show();

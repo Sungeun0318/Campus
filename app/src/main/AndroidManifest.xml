@@ -20,6 +20,7 @@
         <activity
             android:name=".auth.LoginActivity"
             android:exported="true">
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -29,6 +30,7 @@
         <!-- 회원가입 액티비티 -->
         <activity
             android:name=".auth.SignUpActivity"
+            android:theme="@style/Theme.Campus.NoActionBar"
             android:exported="false" />
 
         <!-- 메인 액티비티 -->
