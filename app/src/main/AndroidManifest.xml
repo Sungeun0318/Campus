@@ -42,31 +42,37 @@
         <!-- AI 채팅 액티비티 -->
         <activity
             android:name=".ai.AiChatActivity"
+            android:theme="@style/Theme.Campus.NoActionBar"
             android:exported="false" />
 
         <!-- 감정 기록 액티비티 -->
         <activity
             android:name=".emotions.EmotionRecordActivity"
+            android:theme="@style/Theme.Campus.NoActionBar"
             android:exported="false" />
 
         <!-- 감정 통계 액티비티 -->
         <activity
             android:name=".emotions.EmotionStatsActivity"
+            android:theme="@style/Theme.Campus.NoActionBar"
             android:exported="false" />
 
         <!-- 학습 계획 액티비티 -->
         <activity
             android:name=".study.StudyPlannerActivity"
+            android:theme="@style/Theme.Campus.NoActionBar"
             android:exported="false" />
 
         <!-- 학습 계획 추가 액티비티 -->
         <activity
             android:name=".study.StudyPlanAddActivity"
+            android:theme="@style/Theme.Campus.NoActionBar"
             android:exported="false" />
 
         <!-- 학습 계획 편집 액티비티 -->
         <activity
             android:name=".study.StudyPlanEditActivity"
+            android:theme="@style/Theme.Campus.NoActionBar"
             android:exported="false" />
 
         <!-- WorkManager 설정 -->

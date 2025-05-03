@@ -7,7 +7,7 @@ buildscript {
 
     dependencies {
         // 안드로이드 그래들 플러그인
-        classpath 'com.android.tools.build:gradle:8.9.0' // 안정적인 버전으로 변경
+        classpath 'com.android.tools.build:gradle:8.9.1' // 안정적인 버전으로 변경
 
         // Google 서비스 플러그인 추가
         classpath 'com.google.gms:google-services:4.4.2' // 안정적인 버전

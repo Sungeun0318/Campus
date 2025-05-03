@@ -36,7 +36,7 @@ public class SignUpActivity extends AppCompatActivity {
 
         // Toolbar 설정
         if (binding.toolbar != null) {
-            setSupportActionBar(binding.toolbar);
+           // setSupportActionBar(binding.toolbar);
             if (getSupportActionBar() != null) {
                 getSupportActionBar().setDisplayHomeAsUpEnabled(true);
                 getSupportActionBar().setHomeAsUpIndicator(android.R.drawable.ic_menu_close_clear_cancel);

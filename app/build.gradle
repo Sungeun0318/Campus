@@ -4,7 +4,7 @@ apply plugin: 'com.google.gms.google-services'
 
 android {
     namespace 'com.example.campus'
-    compileSdk 34
+    compileSdk 35
 
     defaultConfig {
         applicationId "com.example.campus"
@@ -33,53 +33,54 @@ android {
 }
 
 // Protobuf 버전 충돌 해결
-configurations.all {
+configurations.configureEach {
     resolutionStrategy {
         force 'com.google.protobuf:protobuf-java:3.19.4'
     }
 }
 
 dependencies {
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.10.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation 'androidx.lifecycle:lifecycle-livedata:2.6.2'
-    implementation 'androidx.lifecycle:lifecycle-viewmodel:2.6.2'
-    implementation 'androidx.navigation:navigation-fragment:2.7.4'
-    implementation 'androidx.navigation:navigation-ui:2.7.4'
-    implementation 'androidx.multidex:multidex:2.0.1' // 멀티덱스 지원
+    implementation libs.appcompat
+    implementation libs.material
+    implementation libs.constraintlayout
+    implementation libs.lifecycle.livedata
+    implementation libs.lifecycle.viewmodel
+    implementation libs.navigation.fragment.v274
+    implementation libs.navigation.ui.v274
+    implementation libs.multidex // 멀티덱스 지원
 
     // Firebase BoM
-    implementation platform('com.google.firebase:firebase-bom:33.12.0')
+    implementation platform(libs.firebase.bom)
 
     // Firebase 분석 라이브러리
-    implementation 'com.google.firebase:firebase-analytics'
+    implementation libs.firebase.analytics
 
     // Firebase 필수 라이브러리
-    implementation 'com.google.firebase:firebase-auth'
-    implementation 'com.google.firebase:firebase-firestore'
-    implementation 'com.google.firebase:firebase-functions'
+    implementation libs.firebase.auth
+    implementation libs.firebase.firestore
+    implementation libs.firebase.functions
 
     // 그래프 라이브러리
-    implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
+    implementation libs.mpandroidchart
 
     // Volley - 네트워크 요청
-    implementation 'com.android.volley:volley:1.2.1'
+    implementation libs.volley
 
     // Gson - JSON 파싱
-    implementation 'com.google.code.gson:gson:2.10.1'
+    implementation libs.gson
 
     // 캘린더 뷰
-    implementation 'com.github.prolificinteractive:material-calendarview:2.0.1'
+    implementation libs.material.calendarview
 
     // WorkManager - 백그라운드 작업
-    implementation 'androidx.work:work-runtime:2.8.1'
+    implementation libs.work.runtime
 
     // Lottie - 애니메이션
-    implementation 'com.airbnb.android:lottie:6.1.0'
+    implementation libs.lottie
 
     // Testing
-    testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+    testImplementation libs.junit
+    androidTestImplementation libs.junit.v115
+    androidTestImplementation libs.espresso.core.v351
 }
+

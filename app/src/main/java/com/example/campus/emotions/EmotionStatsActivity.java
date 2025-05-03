@@ -56,7 +56,7 @@ public class EmotionStatsActivity extends AppCompatActivity {
         auth = FirebaseAuth.getInstance();
 
         // 툴바 설정
-        setSupportActionBar(binding.toolbar);
+        //  setSupportActionBar(binding.toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setTitle("감정 통계");
