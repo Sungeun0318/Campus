@@ -26,7 +26,6 @@ public class AiChatActivity extends AppCompatActivity {
     private ChatMessageAdapter messageAdapter;
     private List<ChatMessage> messageList;
     private AiService aiService;
-    private RequestQueue requestQueue;
     private String chatMode; // "study" 또는 "mental"
     private FirebaseFirestore db;
     private FirebaseAuth auth;
@@ -42,7 +41,7 @@ public class AiChatActivity extends AppCompatActivity {
         auth = FirebaseAuth.getInstance();
 
         // Volley RequestQueue 초기화
-        requestQueue = Volley.newRequestQueue(this);
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
 
         // AI 서비스 초기화
         aiService = AiService.getInstance();
