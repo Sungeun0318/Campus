@@ -4,7 +4,6 @@ import android.util.Log;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
-import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.google.firebase.functions.FirebaseFunctions;
 
@@ -42,16 +41,25 @@ public class AiService {
      */
     public void setGeminiApiKey(String apiKey) {
         this.geminiApiKey = apiKey;
+        // 디버깅을 위한 API 키 마스킹 로그
+        if (apiKey != null && apiKey.length() > 10) {
+            String maskedKey = apiKey.substring(0, 5) + "..." + apiKey.substring(apiKey.length() - 5);
+            Log.d(TAG, "API Key set: " + maskedKey);
+        }
     }
 
     /**
      * Firebase Functions를 통해 AI 응답 생성
+     * Firebase Functions 서버를 통해 안전하게 API 호출
+     *
      * @param prompt 사용자 메시지
      * @param callback 결과 콜백
      */
     public void generateAiResponseWithFunctions(String prompt, final AiCallback callback) {
         Map<String, Object> data = new HashMap<>();
         data.put("prompt", prompt);
+
+        Log.d(TAG, "Calling AI response via Firebase Functions");
 
         functions.getHttpsCallable("generateAIResponse")
                 .call(data)
@@ -75,6 +83,8 @@ public class AiService {
 
     /**
      * Gemini API를 직접 호출하여 AI 응답 생성
+     * 클라이언트에서 직접 API 호출 (API 키가 노출될 수 있음)
+     *
      * @param prompt 사용자 메시지
      * @param requestQueue Volley RequestQueue
      * @param callback 결과 콜백
@@ -87,6 +97,8 @@ public class AiService {
 
         try {
             String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=" + geminiApiKey;
+            Log.d(TAG, "API Request URL (without key): " +
+                    "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=***");
 
             JSONObject jsonBody = new JSONObject();
             JSONArray contents = new JSONArray();
@@ -107,13 +119,15 @@ public class AiService {
                     .put("temperature", 0.7)
                     .put("maxOutputTokens", 1000));
 
+            Log.d(TAG, "Request body: " + jsonBody.toString());
+
             JsonObjectRequest request = new JsonObjectRequest(
                     Request.Method.POST,
                     url,
                     jsonBody,
                     response -> {
                         try {
-                            Log.d(TAG, "Gemini API response: " + response);
+                            Log.d(TAG, "Gemini API response received");
                             String aiResponse = extractTextFromGeminiResponse(response);
                             callback.onSuccess(aiResponse);
                         } catch (JSONException e) {
@@ -123,6 +137,13 @@ public class AiService {
                     },
                     error -> {
                         Log.e(TAG, "Error calling Gemini API", error);
+                        // 더 상세한 오류 정보 로깅
+                        if (error.networkResponse != null) {
+                            Log.e(TAG, "Status code: " + error.networkResponse.statusCode);
+                            if (error.networkResponse.data != null) {
+                                Log.e(TAG, "Error response: " + new String(error.networkResponse.data));
+                            }
+                        }
                         callback.onFailure(error);
                     });
 

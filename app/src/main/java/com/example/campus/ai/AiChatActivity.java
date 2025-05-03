@@ -123,7 +123,7 @@ public class AiChatActivity extends AppCompatActivity {
         }
 
         // Gemini API 직접 호출
-        aiService.generateAiResponseWithGemini(prompt, requestQueue, new AiService.AiCallback() {
+        aiService.generateAiResponseWithFunctions(prompt, new AiService.AiCallback() {
             @Override
             public void onSuccess(String response) {
                 // 로딩 숨김
