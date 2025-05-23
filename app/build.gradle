@@ -1,0 +1,86 @@
+// 플러그인 적용 (버전 명시 없음)
+apply plugin: 'com.android.application'
+apply plugin: 'com.google.gms.google-services'
+
+android {
+    namespace 'com.example.campus'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId "com.example.campus"
+        minSdk 24
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        multiDexEnabled true // 추가
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+    buildFeatures {
+        viewBinding true
+    }
+}
+
+// Protobuf 버전 충돌 해결
+configurations.configureEach {
+    resolutionStrategy {
+        force 'com.google.protobuf:protobuf-java:3.19.4'
+    }
+}
+
+dependencies {
+    implementation libs.appcompat
+    implementation libs.material
+    implementation libs.constraintlayout
+    implementation libs.lifecycle.livedata
+    implementation libs.lifecycle.viewmodel
+    implementation libs.navigation.fragment.v274
+    implementation libs.navigation.ui.v274
+    implementation libs.multidex // 멀티덱스 지원
+
+    // Firebase BoM
+    implementation platform(libs.firebase.bom)
+
+    // Firebase 분석 라이브러리
+    implementation libs.firebase.analytics
+
+    // Firebase 필수 라이브러리
+    implementation libs.firebase.auth
+    implementation libs.firebase.firestore
+    implementation libs.firebase.functions
+
+    // 그래프 라이브러리
+    implementation libs.mpandroidchart
+
+    // Volley - 네트워크 요청
+    implementation libs.volley
+
+    // Gson - JSON 파싱
+    implementation libs.gson
+
+    // 캘린더 뷰
+    implementation libs.material.calendarview
+
+    // WorkManager - 백그라운드 작업
+    implementation libs.work.runtime
+
+    // Lottie - 애니메이션
+    implementation libs.lottie
+
+    // Testing
+    testImplementation libs.junit
+    androidTestImplementation libs.junit.v115
+    androidTestImplementation libs.espresso.core.v351
+}
+

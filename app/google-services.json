@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "11208181303",
+    "project_id": "integrated-campus",
+    "storage_bucket": "integrated-campus.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:11208181303:android:efa961b96f9215d4d1a1b2",
+        "android_client_info": {
+          "package_name": "com.example.campus"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCfKDbIV_g83aMQgFI4mfBldSuXODWRQf0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
