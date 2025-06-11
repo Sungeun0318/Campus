@@ -50,25 +50,23 @@ public class MainActivity extends AppCompatActivity {
         // 하단 네비게이션 이벤트 설정
         binding.bottomNav.setOnItemSelectedListener(item -> {
             Fragment selectedFragment = null;
-            int itemId = item.getItemId(); // 이 줄 추가!
+            int itemId = item.getItemId();
 
             if (itemId == R.id.navigation_timer) {
-                // selectedFragment = new TimerFragment(); // 실제 Fragment로 교체
-                return true;
+                selectedFragment = new TimerFragment(); // ✅ 주석 해제
             } else if (itemId == R.id.navigation_home) {
                 selectedFragment = new HomeFragment();
-                return true;
             } else if (itemId == R.id.navigation_more) {
                 selectedFragment = new MoreFragment();
-                return true;
             }
 
             if (selectedFragment != null) {
                 getSupportFragmentManager().beginTransaction()
                         .replace(R.id.fragment_container, selectedFragment)
                         .commit();
+                return true; // ✅ Fragment 교체 후 return
             }
-            return true;
+            return false;
         });
 
     }

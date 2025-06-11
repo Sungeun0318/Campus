@@ -47,7 +47,7 @@ public class AiChatActivity extends AppCompatActivity {
         aiService = AiService.getInstance();
 
         // Gemini API 키 설정 (실제 키로 교체 필요)
-        aiService.setGeminiApiKey("AIzaSyATFfB28_oKZlP5cA_kRrcAQuvyV6KX4fw");
+        aiService.setGeminiApiKey("AIzaSyAvvEg02npprhuQ_S4Ln8lfbmxY4zAm2BU");
 
         // 채팅 모드 가져오기
         chatMode = getIntent().getStringExtra("chat_mode");
