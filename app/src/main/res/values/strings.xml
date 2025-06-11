@@ -1,0 +1,69 @@
+<resources>
+    <string name="app_name">Campus</string>
+    <string name="title_home">홈</string>
+    <string name="title_dashboard">감정 통계</string>
+    <string name="title_notifications">학습 계획</string>
+
+    <!-- 로그인/회원가입 -->
+    <string name="login">로그인</string>
+    <string name="signup">회원가입</string>
+    <string name="email">이메일</string>
+    <string name="password">비밀번호</string>
+    <string name="confirm_password">비밀번호 확인</string>
+    <string name="name">이름</string>
+    <string name="forgot_password">비밀번호 찾기</string>
+    <string name="have_account">이미 계정이 있으신가요?</string>
+    <string name="no_account">계정이 없으신가요?</string>
+    <string name="logout">로그아웃</string>
+
+    <string name="tour_button_text">AI &amp; 힐링 투어 페이지</string>
+
+    <!-- AI 기능 -->
+    <string name="ai_helper">AI 도우미</string>
+    <string name="study_helper">학습 도우미</string>
+    <string name="mental_care">멘탈 케어</string>
+    <string name="study_helper_desc">공부를 도와주는 AI</string>
+    <string name="mental_care_desc">감정 관리를 돕는 AI</string>
+
+    <!-- 감정 관리 -->
+    <string name="emotion_management">감정 관리</string>
+    <string name="emotion_record">감정 기록</string>
+    <string name="emotion_stats">감정 통계</string>
+    <string name="emotion_record_desc">오늘 감정 기록하기</string>
+    <string name="emotion_stats_desc">감정 변화 분석</string>
+    <string name="emotion_level">감정 수준</string>
+    <string name="emotion_type">감정 유형</string>
+    <string name="save">저장</string>
+    <string name="cancel">취소</string>
+    <string name="emotion_very_bad">매우 나쁨</string>
+    <string name="emotion_bad">나쁨</string>
+    <string name="emotion_neutral">보통</string>
+    <string name="emotion_good">좋음</string>
+    <string name="emotion_very_good">매우 좋음</string>
+    <string name="emotion_happy">행복</string>
+    <string name="emotion_sad">슬픔</string>
+    <string name="emotion_angry">분노</string>
+    <string name="emotion_anxious">불안</string>
+    <string name="emotion_neutral_type">중립</string>
+
+    <!-- 학습 계획 -->
+    <string name="study_plan">학습 계획</string>
+    <string name="study_plan_management">학습 계획 관리</string>
+    <string name="study_plan_desc">학습 일정 관리 및 알림</string>
+    <string name="add_plan">계획 추가</string>
+    <string name="edit_plan">계획 수정</string>
+    <string name="delete_plan">계획 삭제</string>
+    <string name="subject">과목</string>
+    <string name="description">설명</string>
+    <string name="duration">학습 시간</string>
+    <string name="select_date">날짜 선택</string>
+    <string name="select_time">시간 선택</string>
+    <string name="completed">완료</string>
+
+    <!-- 시간 범위 옵션 -->
+    <string-array name="time_range_options">
+        <item>주간</item>
+        <item>월간</item>
+        <item>연간</item>
+    </string-array>
+</resources>

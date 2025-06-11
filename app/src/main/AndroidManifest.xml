@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Campus"
+        tools:targetApi="31">
+
+        <!-- ✅ IntroActivity 추가 -->
+        <activity
+            android:name=".IntroActivity"
+            android:exported="false" />
+
+        <!-- 로그인 액티비티 -->
+        <activity
+            android:name=".auth.LoginActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- 회원가입 액티비티 -->
+        <activity
+            android:name=".auth.SignUpActivity"
+            android:theme="@style/Theme.Campus.NoActionBar"
+            android:exported="false" />
+
+        <!-- 메인 액티비티 -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="false"
+            android:label="@string/app_name" />
+
+        <!-- AI 채팅 액티비티 -->
+        <activity
+            android:name=".ai.AiChatActivity"
+            android:theme="@style/Theme.Campus.NoActionBar"
+            android:exported="false" />
+
+        <!-- 감정 기록 액티비티 -->
+        <activity
+            android:name=".emotions.EmotionRecordActivity"
+            android:theme="@style/Theme.Campus.NoActionBar"
+            android:exported="false" />
+
+        <!-- 감정 통계 액티비티 -->
+        <activity
+            android:name=".emotions.EmotionStatsActivity"
+            android:theme="@style/Theme.Campus.NoActionBar"
+            android:exported="false" />
+
+        <!-- 학습 계획 액티비티 -->
+        <activity
+            android:name=".study.StudyPlannerActivity"
+            android:theme="@style/Theme.Campus.NoActionBar"
+            android:exported="false" />
+
+        <!-- 학습 계획 추가 액티비티 -->
+        <activity
+            android:name=".study.StudyPlanAddActivity"
+            android:theme="@style/Theme.Campus.NoActionBar"
+            android:exported="false" />
+
+        <!-- 학습 계획 편집 액티비티 -->
+        <activity
+            android:name=".study.StudyPlanEditActivity"
+            android:theme="@style/Theme.Campus.NoActionBar"
+            android:exported="false" />
+
+        <!-- WorkManager 설정 -->
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="merge">
+            <meta-data
+                android:name="androidx.work.WorkManagerInitializer"
+                android:value="androidx.startup"
+                tools:node="remove" />
+        </provider>
+
+    </application>
+
+</manifest>
