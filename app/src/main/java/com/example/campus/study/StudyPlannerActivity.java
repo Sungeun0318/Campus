@@ -1,22 +1,25 @@
 package com.example.campus.study;
 
 import android.app.DatePickerDialog;
-import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.DatePicker;
-import android.widget.TimePicker;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.campus.R;
-import com.example.campus.databinding.ActivityStudyPlannerBinding;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
@@ -25,13 +28,20 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
 public class StudyPlannerActivity extends AppCompatActivity implements StudyPlanAdapter.StudyPlanClickListener {
 
-    private ActivityStudyPlannerBinding binding;
+    // UI 요소들 직접 선언
+    private Toolbar toolbar;
+    private TextView tvSelectedDate;
+    private Button btnSelectDate;
+    private RecyclerView recyclerView;
+    private TextView tvNoPlans;
+    private FloatingActionButton fabAdd;
+    private ProgressBar progressBar;
+
     private FirebaseFirestore db;
     private FirebaseAuth auth;
     private StudyPlanAdapter adapter;
@@ -41,19 +51,17 @@ public class StudyPlannerActivity extends AppCompatActivity implements StudyPlan
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = ActivityStudyPlannerBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
+        setContentView(R.layout.activity_study_planner);
 
         // Firebase 초기화
         db = FirebaseFirestore.getInstance();
         auth = FirebaseAuth.getInstance();
 
+        // UI 요소 초기화
+        initializeViews();
+
         // 툴바 설정
-        // setSupportActionBar(binding.toolbar);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle("학습 계획");
-        }
+        setupToolbar();
 
         // 현재 날짜로 초기화
         selectedDate = Calendar.getInstance();
@@ -62,29 +70,71 @@ public class StudyPlannerActivity extends AppCompatActivity implements StudyPlan
         // 리사이클러뷰 설정
         setupRecyclerView();
 
-        // 날짜 선택 버튼 클릭 리스너
-        binding.btnSelectDate.setOnClickListener(v -> showDatePicker());
-
-        // 계획 추가 버튼 클릭 리스너
-        binding.fabAdd.setOnClickListener(v -> showAddPlanDialog());
+        // 클릭 리스너 설정
+        setupClickListeners();
 
         // 데이터 로드
         loadStudyPlans();
     }
 
+    private void initializeViews() {
+        toolbar = findViewById(R.id.toolbar);
+        tvSelectedDate = findViewById(R.id.tvSelectedDate);
+        btnSelectDate = findViewById(R.id.btnSelectDate);
+        recyclerView = findViewById(R.id.recyclerView);
+        tvNoPlans = findViewById(R.id.tvNoPlans);
+        fabAdd = findViewById(R.id.fabAdd);
+        progressBar = findViewById(R.id.progressBar);
+
+        // Null 체크
+        if (toolbar == null || tvSelectedDate == null || btnSelectDate == null ||
+                recyclerView == null || tvNoPlans == null || fabAdd == null || progressBar == null) {
+            Toast.makeText(this, "UI 초기화 오류가 발생했습니다", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+    }
+
+    private void setupToolbar() {
+        try {
+            if (toolbar != null) {
+                setSupportActionBar(toolbar);
+                if (getSupportActionBar() != null) {
+                    getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+                    getSupportActionBar().setTitle("학습 계획");
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            setTitle("학습 계획");
+        }
+    }
+
     private void setupRecyclerView() {
         studyPlans = new ArrayList<>();
         adapter = new StudyPlanAdapter(this, studyPlans, this);
-        binding.recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        binding.recyclerView.setAdapter(adapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setAdapter(adapter);
+    }
+
+    private void setupClickListeners() {
+        // 날짜 선택 버튼 클릭 리스너
+        btnSelectDate.setOnClickListener(v -> showDatePicker());
+
+        // 계획 추가 버튼 클릭 리스너
+        fabAdd.setOnClickListener(v -> showAddPlanDialog());
     }
 
     private void updateDateText() {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy년 MM월 dd일 (E)", Locale.getDefault());
-        binding.tvSelectedDate.setText(sdf.format(selectedDate.getTime()));
+        if (tvSelectedDate != null && selectedDate != null) {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy년 MM월 dd일 (E)", Locale.getDefault());
+            tvSelectedDate.setText(sdf.format(selectedDate.getTime()));
+        }
     }
 
     private void showDatePicker() {
+        if (selectedDate == null) return;
+
         DatePickerDialog datePickerDialog = new DatePickerDialog(
                 this,
                 new DatePickerDialog.OnDateSetListener() {
@@ -111,6 +161,8 @@ public class StudyPlannerActivity extends AppCompatActivity implements StudyPlan
             return;
         }
 
+        if (selectedDate == null) return;
+
         String userId = auth.getCurrentUser().getUid();
 
         // 선택된 날짜의 시작과 끝 시간 계산
@@ -130,7 +182,9 @@ public class StudyPlannerActivity extends AppCompatActivity implements StudyPlan
         long endTime = endCal.getTimeInMillis();
 
         // 로딩 표시
-        binding.progressBar.setVisibility(View.VISIBLE);
+        if (progressBar != null) {
+            progressBar.setVisibility(View.VISIBLE);
+        }
 
         db.collection("studyPlans")
                 .whereEqualTo("userId", userId)
@@ -147,19 +201,27 @@ public class StudyPlannerActivity extends AppCompatActivity implements StudyPlan
                     }
 
                     // 어댑터 업데이트
-                    adapter.updateStudyPlans(studyPlans);
-
-                    // 데이터 유무에 따른 안내 메시지 표시
-                    if (studyPlans.isEmpty()) {
-                        binding.tvNoPlans.setVisibility(View.VISIBLE);
-                    } else {
-                        binding.tvNoPlans.setVisibility(View.GONE);
+                    if (adapter != null) {
+                        adapter.updateStudyPlans(studyPlans);
                     }
 
-                    binding.progressBar.setVisibility(View.GONE);
+                    // 데이터 유무에 따른 안내 메시지 표시
+                    if (tvNoPlans != null) {
+                        if (studyPlans.isEmpty()) {
+                            tvNoPlans.setVisibility(View.VISIBLE);
+                        } else {
+                            tvNoPlans.setVisibility(View.GONE);
+                        }
+                    }
+
+                    if (progressBar != null) {
+                        progressBar.setVisibility(View.GONE);
+                    }
                 })
                 .addOnFailureListener(e -> {
-                    binding.progressBar.setVisibility(View.GONE);
+                    if (progressBar != null) {
+                        progressBar.setVisibility(View.GONE);
+                    }
                     Toast.makeText(this, "데이터 로드 실패: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }

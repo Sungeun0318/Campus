@@ -7,12 +7,17 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ProgressBar;
+import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 import com.example.campus.R;
-import com.example.campus.databinding.ActivityEmotionStatsBinding;
+import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.charts.PieChart;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
@@ -39,7 +44,17 @@ import java.util.Map;
 
 public class EmotionStatsActivity extends AppCompatActivity {
 
-    private ActivityEmotionStatsBinding binding;
+    // UI 요소들 직접 선언
+    private Toolbar toolbar;
+    private Spinner spinnerTimeRange;
+    private TextView tvDateRange;
+    private LineChart lineChart;
+    private PieChart pieChart;
+    private TextView tvTotalRecords;
+    private TextView tvAvgMood;
+    private TextView tvAnalysis;
+    private ProgressBar progressBar;
+
     private FirebaseFirestore db;
     private FirebaseAuth auth;
     private String timeRange = "주간"; // 기본값: 주간
@@ -48,19 +63,17 @@ public class EmotionStatsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = ActivityEmotionStatsBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
+        setContentView(R.layout.activity_emotion_stats);
 
         // Firebase 초기화
         db = FirebaseFirestore.getInstance();
         auth = FirebaseAuth.getInstance();
 
+        // UI 요소 초기화
+        initializeViews();
+
         // 툴바 설정
-        //  setSupportActionBar(binding.toolbar);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle("감정 통계");
-        }
+        setupToolbar();
 
         // 스피너 설정
         setupTimeRangeSpinner();
@@ -72,13 +85,50 @@ public class EmotionStatsActivity extends AppCompatActivity {
         loadEmotionData();
     }
 
+    private void initializeViews() {
+        toolbar = findViewById(R.id.toolbar);
+        spinnerTimeRange = findViewById(R.id.spinnerTimeRange);
+        tvDateRange = findViewById(R.id.tvDateRange);
+        lineChart = findViewById(R.id.lineChart);
+        pieChart = findViewById(R.id.pieChart);
+        tvTotalRecords = findViewById(R.id.tvTotalRecords);
+        tvAvgMood = findViewById(R.id.tvAvgMood);
+        tvAnalysis = findViewById(R.id.tvAnalysis);
+        progressBar = findViewById(R.id.progressBar);
+
+        // Null 체크
+        if (toolbar == null || spinnerTimeRange == null || tvDateRange == null ||
+                lineChart == null || pieChart == null || tvTotalRecords == null ||
+                tvAvgMood == null || tvAnalysis == null || progressBar == null) {
+            Toast.makeText(this, "UI 초기화 오류가 발생했습니다", Toast.LENGTH_SHORT).show();
+            finish();
+        }
+    }
+
+    private void setupToolbar() {
+        try {
+            if (toolbar != null) {
+                setSupportActionBar(toolbar);
+                if (getSupportActionBar() != null) {
+                    getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+                    getSupportActionBar().setTitle("감정 통계");
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            setTitle("감정 통계");
+        }
+    }
+
     private void setupTimeRangeSpinner() {
+        if (spinnerTimeRange == null) return;
+
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
                 this, R.array.time_range_options, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        binding.spinnerTimeRange.setAdapter(adapter);
+        spinnerTimeRange.setAdapter(adapter);
 
-        binding.spinnerTimeRange.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        spinnerTimeRange.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 String[] options = getResources().getStringArray(R.array.time_range_options);
@@ -99,6 +149,8 @@ public class EmotionStatsActivity extends AppCompatActivity {
     }
 
     private void updateDateRangeText() {
+        if (tvDateRange == null) return;
+
         Calendar calendar = Calendar.getInstance();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy년 MM월 dd일", Locale.getDefault());
         String endDateStr = sdf.format(calendar.getTime());
@@ -123,7 +175,7 @@ public class EmotionStatsActivity extends AppCompatActivity {
                 break;
         }
 
-        binding.tvDateRange.setText(startDateStr + " ~ " + endDateStr);
+        tvDateRange.setText(startDateStr + " ~ " + endDateStr);
     }
 
     private void loadEmotionData() {
@@ -136,7 +188,9 @@ public class EmotionStatsActivity extends AppCompatActivity {
         String userId = auth.getCurrentUser().getUid();
 
         // 로딩 표시
-        binding.progressBar.setVisibility(View.VISIBLE);
+        if (progressBar != null) {
+            progressBar.setVisibility(View.VISIBLE);
+        }
 
         // 시작 날짜 계산
         Calendar calendar = Calendar.getInstance();
@@ -169,7 +223,9 @@ public class EmotionStatsActivity extends AppCompatActivity {
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     if (queryDocumentSnapshots.isEmpty()) {
                         // 데이터가 없는 경우
-                        binding.progressBar.setVisibility(View.GONE);
+                        if (progressBar != null) {
+                            progressBar.setVisibility(View.GONE);
+                        }
                         Toast.makeText(this, "해당 기간에 기록된 감정이 없습니다", Toast.LENGTH_SHORT).show();
                         setupEmptyCharts();
                         return;
@@ -184,10 +240,14 @@ public class EmotionStatsActivity extends AppCompatActivity {
                     // 차트 업데이트
                     updateCharts(records);
 
-                    binding.progressBar.setVisibility(View.GONE);
+                    if (progressBar != null) {
+                        progressBar.setVisibility(View.GONE);
+                    }
                 })
                 .addOnFailureListener(e -> {
-                    binding.progressBar.setVisibility(View.GONE);
+                    if (progressBar != null) {
+                        progressBar.setVisibility(View.GONE);
+                    }
                     Toast.makeText(this, "데이터 로드 실패: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     Log.e(TAG, "데이터 로드 실패", e);
                 });
@@ -195,12 +255,21 @@ public class EmotionStatsActivity extends AppCompatActivity {
 
     private void setupEmptyCharts() {
         // 라인 차트 초기화
-        binding.lineChart.setNoDataText("데이터가 없습니다");
-        binding.lineChart.invalidate();
+        if (lineChart != null) {
+            lineChart.setNoDataText("데이터가 없습니다");
+            lineChart.invalidate();
+        }
 
         // 파이 차트 초기화
-        binding.pieChart.setNoDataText("데이터가 없습니다");
-        binding.pieChart.invalidate();
+        if (pieChart != null) {
+            pieChart.setNoDataText("데이터가 없습니다");
+            pieChart.invalidate();
+        }
+
+        // 통계 초기화
+        if (tvTotalRecords != null) tvTotalRecords.setText("0");
+        if (tvAvgMood != null) tvAvgMood.setText("0.0");
+        if (tvAnalysis != null) tvAnalysis.setText("감정 데이터가 충분하지 않습니다. 더 많은 감정을 기록해주세요.");
     }
 
     private void updateCharts(List<EmotionRecord> records) {
@@ -210,6 +279,8 @@ public class EmotionStatsActivity extends AppCompatActivity {
     }
 
     private void updateLineChart(List<EmotionRecord> records) {
+        if (lineChart == null) return;
+
         List<Entry> entries = new ArrayList<>();
         List<String> xLabels = new ArrayList<>();
 
@@ -247,34 +318,36 @@ public class EmotionStatsActivity extends AppCompatActivity {
 
         LineData lineData = new LineData(dataSet);
 
-        binding.lineChart.setData(lineData);
+        lineChart.setData(lineData);
 
         // X축 설정
-        XAxis xAxis = binding.lineChart.getXAxis();
+        XAxis xAxis = lineChart.getXAxis();
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         xAxis.setGranularity(1f);
         xAxis.setValueFormatter(new IndexAxisValueFormatter(xLabels));
 
         // Y축 설정
-        YAxis leftAxis = binding.lineChart.getAxisLeft();
+        YAxis leftAxis = lineChart.getAxisLeft();
         leftAxis.setAxisMinimum(0f);
         leftAxis.setAxisMaximum(6f);
         leftAxis.setGranularity(1f);
 
-        YAxis rightAxis = binding.lineChart.getAxisRight();
+        YAxis rightAxis = lineChart.getAxisRight();
         rightAxis.setEnabled(false);
 
-        binding.lineChart.getDescription().setEnabled(false);
-        binding.lineChart.getLegend().setEnabled(true);
-        binding.lineChart.setTouchEnabled(true);
-        binding.lineChart.setDragEnabled(true);
-        binding.lineChart.setScaleEnabled(true);
-        binding.lineChart.setPinchZoom(true);
+        lineChart.getDescription().setEnabled(false);
+        lineChart.getLegend().setEnabled(true);
+        lineChart.setTouchEnabled(true);
+        lineChart.setDragEnabled(true);
+        lineChart.setScaleEnabled(true);
+        lineChart.setPinchZoom(true);
 
-        binding.lineChart.invalidate(); // 차트 갱신
+        lineChart.invalidate(); // 차트 갱신
     }
 
     private void updatePieChart(List<EmotionRecord> records) {
+        if (pieChart == null) return;
+
         // 감정 유형별 카운트
         Map<String, Integer> emotionCounts = new HashMap<>();
 
@@ -295,16 +368,16 @@ public class EmotionStatsActivity extends AppCompatActivity {
 
         PieData pieData = new PieData(dataSet);
 
-        binding.pieChart.setData(pieData);
-        binding.pieChart.getDescription().setEnabled(false);
-        binding.pieChart.getLegend().setEnabled(true);
-        binding.pieChart.setCenterText("감정 분포");
-        binding.pieChart.setCenterTextSize(16f);
-        binding.pieChart.setEntryLabelTextSize(14f);
-        binding.pieChart.setHoleRadius(40f);
-        binding.pieChart.setTransparentCircleRadius(45f);
+        pieChart.setData(pieData);
+        pieChart.getDescription().setEnabled(false);
+        pieChart.getLegend().setEnabled(true);
+        pieChart.setCenterText("감정 분포");
+        pieChart.setCenterTextSize(16f);
+        pieChart.setEntryLabelTextSize(14f);
+        pieChart.setHoleRadius(40f);
+        pieChart.setTransparentCircleRadius(45f);
 
-        binding.pieChart.invalidate(); // 차트 갱신
+        pieChart.invalidate(); // 차트 갱신
     }
 
     private void updateStats(List<EmotionRecord> records) {
@@ -319,8 +392,12 @@ public class EmotionStatsActivity extends AppCompatActivity {
         float avgEmotionLevel = totalRecords > 0 ? (float) sumEmotionLevel / totalRecords : 0;
 
         // 텍스트 업데이트
-        binding.tvTotalRecords.setText(String.valueOf(totalRecords));
-        binding.tvAvgMood.setText(String.format(Locale.getDefault(), "%.1f", avgEmotionLevel));
+        if (tvTotalRecords != null) {
+            tvTotalRecords.setText(String.valueOf(totalRecords));
+        }
+        if (tvAvgMood != null) {
+            tvAvgMood.setText(String.format(Locale.getDefault(), "%.1f", avgEmotionLevel));
+        }
 
         // 감정 분석 텍스트 업데이트
         String analysisText;
@@ -334,7 +411,9 @@ public class EmotionStatsActivity extends AppCompatActivity {
             analysisText = "감정 상태가 좋지 않습니다. 전문가와 상담하거나 AI 멘탈 케어를 이용해보세요.";
         }
 
-        binding.tvAnalysis.setText(analysisText);
+        if (tvAnalysis != null) {
+            tvAnalysis.setText(analysisText);
+        }
     }
 
     @Override
